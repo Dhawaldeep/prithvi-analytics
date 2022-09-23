@@ -9,6 +9,8 @@ import { ISizes } from '../interfaces/sizes.interface';
 import { ISource } from '../interfaces/source.interface';
 import { CameraService } from './camera.service';
 import { RendererService } from './renderer.service';
+import { DimensionService } from './resources/dimension.service';
+import { RaycasterService } from './utils/raycaster.service';
 import { ResourcesService } from './utils/resources.service';
 import { SizesService } from './utils/sizes.service';
 import { TimeService } from './utils/time.service';
@@ -22,6 +24,7 @@ export class PrithviService {
   private model?: Object3D;
   private controls?: OrbitControls;
   private renderer?: WebGLRenderer;
+  private sizes?: ISizes;
 
   constructor(
     private timeService: TimeService,
@@ -29,6 +32,8 @@ export class PrithviService {
     private cameraService: CameraService,
     private rendererService: RendererService,
     private resourcesService: ResourcesService,
+    private raycasterService: RaycasterService,
+    private dimensionService: DimensionService,
   ) { }
 
   public initialize(container: HTMLDivElement, unsubscribeSub: Subject<void>, sources: ISource[]) {
@@ -39,11 +44,11 @@ export class PrithviService {
     // Initialize Scene
     this.scene = new Scene();
     this.scene.add(new AxesHelper(50));
-    const sizes: ISizes = {
+    this.sizes = {
       width: container.clientWidth!,
       height: container.clientHeight!
     };
-    const cameraInitialized = this.cameraService.initialize(sizes, this.renderer.domElement);
+    const cameraInitialized = this.cameraService.initialize(this.sizes, this.renderer.domElement);
     this.camera = cameraInitialized.camera;
     this.controls = cameraInitialized.controls;
     this.timeService.tick();
@@ -52,18 +57,30 @@ export class PrithviService {
     });
 
     this.sizesService.getResize().pipe(takeUntil(unsubscribeSub)).subscribe(() => {
-      const sizes = {
+      this.sizes = {
         width: container.clientWidth!,
         height: container.clientHeight!
       }
-      this.onResize(sizes);
+      this.onResize(this.sizes);
     });
 
     this.timeService.getTrigger().pipe(takeUntil(unsubscribeSub)).subscribe(() => {
       this.onUpdate();
     });
 
-    this.resourcesService.getLoadedModel().subscribe(this.onModelLoaded.bind(this));
+    this.resourcesService.getLoadedModel().pipe(takeUntil(unsubscribeSub)).subscribe(this.onModelLoaded.bind(this));
+
+    this.raycasterService.getIntersections().pipe(takeUntil(unsubscribeSub)).subscribe((intersections) => {
+      console.log('Intersections =>>>', intersections);
+      if (intersections.length > 0) {
+        const position = intersections[0].point;
+        this.dimensionService.setMarker(position);
+      }
+    });
+
+    this.dimensionService.meshAdded().pipe(takeUntil(unsubscribeSub)).subscribe(mesh => {
+      this.scene?.add(mesh);
+    });
   }
 
   private onResize(sizes: ISizes) {
@@ -127,6 +144,13 @@ export class PrithviService {
       });
     }
     this.controls!.target.set(0, 0, 0);
+  }
+
+  public onClick(event: MouseEvent) {
+    console.log(this.sizes , this.camera , this.model, event);
+    if (this.sizes && this.camera && this.model) {
+      this.raycasterService.raycastOnClickedPoint(event, this.sizes, this.camera, this.model);
+    }
   }
 
   public getLoadedPercentage() {
