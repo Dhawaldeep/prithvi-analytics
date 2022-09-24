@@ -41,4 +41,5 @@ export class ResourcesService {
   public getLoadedModel() {
     return this.modelLoaded$.asObservable();
   }
+  
 }

@@ -11,7 +11,7 @@ import { CameraService } from './camera.service';
 import { RendererService } from './renderer.service';
 import { DimensionService } from './resources/dimension.service';
 import { RaycasterService } from './utils/raycaster.service';
-import { ResourcesService } from './utils/resources.service';
+import { ResourcesService } from './resources/resources.service';
 import { SizesService } from './utils/sizes.service';
 import { TimeService } from './utils/time.service';
 
@@ -109,7 +109,7 @@ export class PrithviService {
           this.model = object;
           this.scene?.add(this.model);
         }
-        
+
       }
     })
     console.log(this.model);
@@ -147,7 +147,7 @@ export class PrithviService {
   }
 
   public onClick(event: MouseEvent) {
-    console.log(this.sizes , this.camera , this.model, event);
+    console.log(this.sizes, this.camera, this.model, event);
     if (this.sizes && this.camera && this.model) {
       this.raycasterService.raycastOnClickedPoint(event, this.sizes, this.camera, this.model);
     }
@@ -160,5 +160,20 @@ export class PrithviService {
   public destroy() {
     this.timeService.stop();
     this.sizesService.destroy();
+    this.scene?.traverse(child => {
+      if (child instanceof Mesh) {
+        child.geometry.dispose();
+
+        for (const key in child.material) {
+          const value = child.material[key];
+
+          if (value && typeof value.dispose === 'function') {
+            value.dispose();
+          }
+        }
+      }
+    });
+    this.cameraService.destroy();
+    this.rendererService.destroy();
   }
 }

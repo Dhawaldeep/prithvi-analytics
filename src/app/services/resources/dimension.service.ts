@@ -34,5 +34,10 @@ export class DimensionService {
     return this.meshAdded$.asObservable();
   }
 
+  public destroy() {
+    this.lengthMarkers.splice(0);
+    this['dimensionLine'];
+  }
+
   
 }

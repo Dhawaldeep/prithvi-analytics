@@ -31,4 +31,8 @@ export class CameraService {
   public update() {
     this.controls?.update();
   }
+
+  public destroy() {
+    this.controls?.dispose();
+  }
 }

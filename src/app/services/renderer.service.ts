@@ -35,4 +35,8 @@ export class RendererService {
   public update(scene: Scene, camera: PerspectiveCamera){
     this.instance?.render(scene, camera);
   }
+
+  public destroy() {
+    this.instance?.dispose();
+  }
 }
