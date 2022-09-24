@@ -1,2 +1,20 @@
 <div #container (mousedown)="onMouseDown()" (mouseup)="onMouseUp($event)" class="container">
 </div>
+<div #chipContainer class="chip-container">
+    <mat-chip-list>
+        <mat-chip color="primary" selected>{{length | number}}m</mat-chip>
+    </mat-chip-list>
+</div>
+<div class="mode">
+    <mat-card>
+        <mat-card-title>
+            Mode
+        </mat-card-title>
+        <mat-card-content>
+            <mat-button-toggle-group [formControl]="modeFormControl" aria-label="Mode">
+                <mat-button-toggle [value]="1">Default</mat-button-toggle>
+                <mat-button-toggle [value]="2">Dimension</mat-button-toggle>
+            </mat-button-toggle-group>
+        </mat-card-content>
+    </mat-card>
+</div>

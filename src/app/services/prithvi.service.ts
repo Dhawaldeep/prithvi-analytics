@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import gsap from 'gsap';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators'
-import { AxesHelper, BufferGeometry, Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { tap } from 'rxjs/operators';
+import { takeUntil, filter, withLatestFrom } from 'rxjs/operators'
+import { AxesHelper, BufferGeometry, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ISizes } from '../interfaces/sizes.interface';
@@ -14,6 +15,7 @@ import { RaycasterService } from './utils/raycaster.service';
 import { ResourcesService } from './resources/resources.service';
 import { SizesService } from './utils/sizes.service';
 import { TimeService } from './utils/time.service';
+import { MODES } from '../enums/modes.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +27,11 @@ export class PrithviService {
   private controls?: OrbitControls;
   private renderer?: WebGLRenderer;
   private sizes?: ISizes;
+  private currentLengthOnPoint$ = new Subject<{
+    event?: { x: number; y: number; };
+    length: number;
+  }>();
+  private modes: MODES = MODES.DEFAULT;
 
   constructor(
     private timeService: TimeService,
@@ -37,7 +44,6 @@ export class PrithviService {
   ) { }
 
   public initialize(container: HTMLDivElement, unsubscribeSub: Subject<void>, sources: ISource[]) {
-
     this.renderer = this.rendererService.setInstance(container);
     this.sizesService.setup();
     this.timeService.setup();
@@ -51,6 +57,7 @@ export class PrithviService {
     const cameraInitialized = this.cameraService.initialize(this.sizes, this.renderer.domElement);
     this.camera = cameraInitialized.camera;
     this.controls = cameraInitialized.controls;
+    this.controls.enabled = false;
     this.timeService.tick();
     sources.forEach(source => {
       this.resourcesService.loadModel(source.assetUrl);
@@ -64,22 +71,50 @@ export class PrithviService {
       this.onResize(this.sizes);
     });
 
-    this.timeService.getTrigger().pipe(takeUntil(unsubscribeSub)).subscribe(() => {
+    this.timeService.getTrigger().pipe(
+      takeUntil(unsubscribeSub)
+    ).subscribe(() => {
       this.onUpdate();
     });
 
     this.resourcesService.getLoadedModel().pipe(takeUntil(unsubscribeSub)).subscribe(this.onModelLoaded.bind(this));
 
     this.raycasterService.getIntersections().pipe(takeUntil(unsubscribeSub)).subscribe((intersections) => {
-      console.log('Intersections =>>>', intersections);
       if (intersections.length > 0) {
         const position = intersections[0].point;
+        position.setY(position.y + 1);
         this.dimensionService.setMarker(position);
       }
     });
 
-    this.dimensionService.meshAdded().pipe(takeUntil(unsubscribeSub)).subscribe(mesh => {
+    this.dimensionService.meshAdded().pipe(
+      takeUntil(unsubscribeSub),
+      tap(() => console.log(this.modes)),
+      filter(() => this.modes === MODES.DIM)
+    ).subscribe(mesh => {
       this.scene?.add(mesh);
+    });
+
+    this.timeService.getTrigger().pipe(
+      takeUntil(unsubscribeSub),
+      tap(() => console.log(this.modes)),
+      filter(() => this.modes === MODES.DIM),
+      withLatestFrom(this.dimensionService.getLengthObj())
+    ).subscribe(([_, lengthObj]) => {
+      if (lengthObj.position) {
+        const screenPosition = lengthObj.position.clone();
+        screenPosition.project(this.camera!);
+        const x = screenPosition.x * this.sizes!.width * 0.5;
+        const y = - screenPosition.y * this.sizes!.height * 0.5;
+        this.currentLengthOnPoint$.next({
+          event: { x, y },
+          length: lengthObj.length,
+        });
+      } else {
+        this.currentLengthOnPoint$.next({
+          length: 0,
+        });
+      }
     });
   }
 
@@ -94,7 +129,6 @@ export class PrithviService {
   }
 
   private onModelLoaded(gltf: GLTF) {
-    console.log('MODEL ', gltf);
     let isPlodiv = false;
     let isTeste = false;
     gltf.scene.traverse(object => {
@@ -112,7 +146,6 @@ export class PrithviService {
 
       }
     })
-    console.log(this.model);
     let radius = 0;
     this.model?.traverse(object => {
       if (object instanceof Mesh) {
@@ -121,7 +154,6 @@ export class PrithviService {
         radius = boundingSphere!.radius;
       }
     });
-    console.log(radius);
     if (isPlodiv) {
       this.model!.position.y = -radius * 1.5;
       this.model!.position.z = radius;
@@ -131,6 +163,8 @@ export class PrithviService {
         y: 1.5 * radius,
         z: 1.5 * radius,
         duration: 5
+      }).then(() => {
+        this.controls!.enabled = true;
       });
     }
     if (isTeste) {
@@ -141,20 +175,41 @@ export class PrithviService {
         y: 1 * radius,
         z: 1 * radius,
         duration: 3
+      }).then(() => {
+        this.controls!.enabled = true;
       });
     }
     this.controls!.target.set(0, 0, 0);
   }
 
   public onClick(event: MouseEvent) {
-    console.log(this.sizes, this.camera, this.model, event);
     if (this.sizes && this.camera && this.model) {
       this.raycasterService.raycastOnClickedPoint(event, this.sizes, this.camera, this.model);
     }
   }
 
+  public onEscapePress() {
+    const meshes = this.dimensionService.getToBeRemovedMeshes();
+    meshes.forEach(mesh => {
+      if (mesh) {
+        mesh.geometry.dispose();
+        (mesh.material as MeshBasicMaterial).dispose();
+        this.scene?.remove(mesh);
+      }
+    });
+    this.dimensionService.destroy();
+  }
+
   public getLoadedPercentage() {
     return this.resourcesService.getLoadedPercentage();
+  }
+
+  public getCurrentLength() {
+    return this.currentLengthOnPoint$.asObservable();
+  }
+
+  public setMode(mode: MODES) {
+    this.modes = mode;
   }
 
   public destroy() {
