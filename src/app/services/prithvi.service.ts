@@ -89,7 +89,6 @@ export class PrithviService {
 
     this.dimensionService.meshAdded().pipe(
       takeUntil(unsubscribeSub),
-      tap(() => console.log(this.modes)),
       filter(() => this.modes === MODES.DIM)
     ).subscribe(mesh => {
       this.scene?.add(mesh);
@@ -97,7 +96,6 @@ export class PrithviService {
 
     this.timeService.getTrigger().pipe(
       takeUntil(unsubscribeSub),
-      tap(() => console.log(this.modes)),
       filter(() => this.modes === MODES.DIM),
       withLatestFrom(this.dimensionService.getLengthObj())
     ).subscribe(([_, lengthObj]) => {
@@ -210,6 +208,12 @@ export class PrithviService {
 
   public setMode(mode: MODES) {
     this.modes = mode;
+    if (this.modes === MODES.DEFAULT) {
+      this.onEscapePress();
+      this.currentLengthOnPoint$.next({
+        length: 0,
+      });
+    }
   }
 
   public destroy() {

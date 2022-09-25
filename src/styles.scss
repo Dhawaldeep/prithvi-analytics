@@ -1,5 +1,6 @@
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
+@use 'sass:map';
 @use '@angular/material' as mat;
 // Plus imports for other components in your app.
 
@@ -23,6 +24,30 @@ $prithvi-analytics-theme: mat.define-light-theme((color: (primary: $prithvi-anal
         accent: $prithvi-analytics-accent,
         warn: $prithvi-analytics-warn,
       )));
+
+
+@mixin mix-app-theme($app-theme) {
+  $primary: map.get($app-theme, primary);
+  $accent: map.get($app-theme, accent);
+
+  // .mat-button-toggle {
+  //   background-color:  mat.get-color-from-palette($primary) !important;
+  //   color:  mat.get-color-from-palette($primary, default-contrast) !important;
+  // }
+
+  // .mat-button-toggle-checked {
+  //   background-color:  mat.get-color-from-palette($accent) !important;
+  //   color:  mat.get-color-from-palette($accent, default-contrast) !important;
+  // }
+
+  .mat-card {
+    background-color:  mat.get-color-from-palette($primary) !important;
+    opacity: 0.8;
+  }
+}
+
+// Include the mixin
+@include mix-app-theme($prithvi-analytics-theme);
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
