@@ -7,7 +7,8 @@ import { MatButtonToggle } from '@angular/material/button-toggle'
 import { PrithviService } from './services/prithvi.service';
 import { MODES } from './enums/modes.enum';
 import { environment } from 'src/environments/environment';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { InfoSheetComponent } from './components/info-sheet/info-sheet.component';
 
 @Component({
   selector: 'app-root',
@@ -33,7 +34,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private titleService: Title,
     private prithviService: PrithviService,
     private renderer: Renderer2,
-    private sanckbar: MatSnackBar,
+    private _bottomSheet: MatBottomSheet
   ) {
     this.titleService.setTitle(this.title);
     this.loadingBarScale$ = prithviService.getLoadedAmount().pipe(
@@ -50,13 +51,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       if (modes === MODES.DIM) {
         this.container!.nativeElement.style.cursor = 'crosshair';
-        this.sanckbar.open(`
-          Left click the 3D model, and the measurement between the two markers will display.\n
-          Keep clicking to add more measurement markers. When the first marker and the last marker are close enough, the area will display.\n
-          Press 'Escape' key to clear the measurement.
-        `, 'OK', {
-          verticalPosition: 'top',
-        });
       }
     });
   }
@@ -80,14 +74,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });
-
-    this.sanckbar.open("ORBIT: Left click + drag or One finger drag (touch). ZOOM: Double click on model or scroll anywhere or Pinch (touch). PAN: Right click + drag or Two fingers drag (touch)", "OK", {
-      verticalPosition: 'top',
-    }).afterDismissed().subscribe(() => {
-      this.sanckbar.open("Cick on 'Measurement' button to toggle measurement mode.", 'OK', {
-        verticalPosition: 'top',
-      });
-    })
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -129,6 +115,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         clearTimeout(this.clickTimeout);
       }
     }
+  }
+
+  public openInfoBox() {
+    this._bottomSheet.open(InfoSheetComponent);
   }
 
   ngOnDestroy(): void {

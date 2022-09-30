@@ -5,17 +5,20 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { InfoSheetComponent } from './components/info-sheet/info-sheet.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    InfoSheetComponent,
   ],
   imports: [
     BrowserModule,
@@ -25,9 +28,11 @@ import { AppComponent } from './app.component';
     MatChipsModule,
     MatButtonToggleModule,
     MatCardModule,
-    MatSnackBarModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatBottomSheetModule,
+    MatListModule,
+    MatDividerModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

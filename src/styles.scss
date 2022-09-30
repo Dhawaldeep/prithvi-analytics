@@ -30,23 +30,32 @@ $prithvi-analytics-theme: mat.define-light-theme((color: (primary: $prithvi-anal
   $primary: map.get($app-theme, primary);
   $accent: map.get($app-theme, accent);
 
-  // .mat-button-toggle {
-  //   background-color:  mat.get-color-from-palette($primary) !important;
-  //   color:  mat.get-color-from-palette($primary, default-contrast) !important;
-  // }
+  .mode {
+    // .mat-button-toggle {
+    //   background-color:  mat.get-color-from-palette($primary, A100) !important;
+    //   color:  mat.get-color-from-palette($primary, default-contrast) !important;
+    // }
+  
+    .mat-button-toggle-checked {
+      background-color:  mat.get-color-from-palette($accent) !important;
+      color:  mat.get-color-from-palette($accent, default-contrast) !important;
+    }
 
-  .mat-button-toggle-checked {
-    background-color:  mat.get-color-from-palette($accent) !important;
-    color:  mat.get-color-from-palette($accent, default-contrast) !important;
+    .mat-card {
+      background-color:  mat.get-color-from-palette($primary) !important;
+      color:  mat.get-color-from-palette($primary, default-contrast) !important;
+    }
+  }
+
+  .mat-bottom-sheet-container-medium {
+    background-color:  mat.get-color-from-palette($primary, A200) !important;
+    opacity: 0.8 !important;
   }
 
   .loading-bar {
     background-color:  mat.get-color-from-palette($accent) !important;
   }
 
-  .mat-card {
-    background-color:  mat.get-color-from-palette($primary) !important;
-  }
 }
 
 // Include the mixin
