@@ -61,6 +61,8 @@ export class DimensionService {
       bufferGeometry.setAttribute( 'position', new BufferAttribute( vertices, 3 ) );
 
       this.dimensionPolygon = new Mesh(bufferGeometry, new MeshBasicMaterial({ color: 0xD50000, transparent: true, opacity: 0.5, side: DoubleSide }));
+      // this.dimensionPolygon.renderOrder = 2;
+      (this.dimensionPolygon.material as MeshBasicMaterial).depthTest = false;
       this.meshAdded$.next(this.dimensionPolygon);
       
       const lengthObj: { length: number; prevPos: Vector3 } = [...this.lengthMarkers, this.lengthMarkers[0]].reduce((acc, curr) => {
@@ -82,12 +84,14 @@ export class DimensionService {
     } else {
       if (data.modelIntersections.length > 0) {
         const position = data.modelIntersections[0].point;
-        position.setY(position.y + 1);
+        position.setY(position.y);
         const marker = new Mesh(new SphereGeometry(1), new MeshBasicMaterial({ color: 0xD50000, transparent: true, opacity: 0.5 }));
         marker.position.copy(position);
         marker.userData = {
           'type': 'marker'
         };
+        // marker.renderOrder = 2;
+        (marker.material as MeshBasicMaterial).depthTest = false;
         this.lengthMarkers.push(marker);
         this.meshAdded$.next(marker);
         if (this.lengthMarkers.length > 0) {
@@ -98,6 +102,8 @@ export class DimensionService {
             const geometry = new BufferGeometry();
             geometry.setFromPoints(this.lengthMarkers.map(marker => marker.position));
             this.dimensionLine = new Line(geometry, new MeshBasicMaterial({ color: 0xD50000 }));
+            (this.dimensionLine.material as MeshBasicMaterial).depthTest = false;
+            // this.dimensionLine.renderOrder = 2;
           }
           const lengthObj: { length: number; prevPos: Vector3 } = this.lengthMarkers.reduce((acc, curr) => {
             const segmentDistance = acc.prevPos.distanceTo(curr.position);
@@ -109,7 +115,7 @@ export class DimensionService {
             length: 0,
             prevPos: this.lengthMarkers[0].position
           } as { length: number; prevPos: Vector3 });
-
+          
           this.lengthObj$.next({
             length: lengthObj.length,
             position: lengthObj.prevPos

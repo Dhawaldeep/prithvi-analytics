@@ -46,7 +46,6 @@ $prithvi-analytics-theme: mat.define-light-theme((color: (primary: $prithvi-anal
 
   .mat-card {
     background-color:  mat.get-color-from-palette($primary) !important;
-    opacity: 0.8;
   }
 }
 

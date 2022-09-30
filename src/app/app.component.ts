@@ -7,6 +7,7 @@ import { MatButtonToggle } from '@angular/material/button-toggle'
 import { PrithviService } from './services/prithvi.service';
 import { MODES } from './enums/modes.enum';
 import { environment } from 'src/environments/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-root',
@@ -28,7 +29,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public loadingBarScale$: Observable<string>;
   private ngUnSubscribe = new Subject<void>();
-  constructor(private titleService: Title, private prithviService: PrithviService, private renderer: Renderer2) {
+  constructor(
+    private titleService: Title,
+    private prithviService: PrithviService,
+    private renderer: Renderer2,
+    private sanckbar: MatSnackBar,
+  ) {
     this.titleService.setTitle(this.title);
     this.loadingBarScale$ = prithviService.getLoadedAmount().pipe(
       takeUntil(this.ngUnSubscribe),
@@ -39,6 +45,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.modeFormControl.valueChanges.pipe(takeUntil(this.ngUnSubscribe)).subscribe(modes => {
       this.prithviService.setMode(modes!);
+      if (modes === MODES.DEFAULT) {
+        this.container!.nativeElement.style.cursor = 'grab';
+      }
+      if (modes === MODES.DIM) {
+        this.container!.nativeElement.style.cursor = 'crosshair';
+        this.sanckbar.open(`
+          Left click the 3D model, and the measurement between the two markers will display.\n
+          Keep clicking to add more measurement markers. When the first marker and the last marker are close enough, the area will display.\n
+          Press 'Escape' key to clear the measurement.
+        `, 'OK', {
+          verticalPosition: 'top',
+        });
+      }
     });
   }
 
@@ -61,6 +80,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });
+
+    this.sanckbar.open("Left click + drag or One finger drag (touch). Double click on model or scroll anywhere or Pinch (touch). Right click + drag or Two fingers drag (touch)", "OK", {
+      verticalPosition: 'top',
+    }).afterDismissed().subscribe(() => {
+      this.sanckbar.open("Cick on 'Measurement' button to toggle measurement mode.", 'OK', {
+        verticalPosition: 'top',
+      });
+    })
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -71,7 +98,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public onMouseDown() {
-    if (this.modeFormControl.value === MODES.DEFAULT) return;
+    if (this.modeFormControl.value === MODES.DEFAULT) {
+      if (this.container) {
+        this.container.nativeElement.style.cursor = 'grabbing';
+      }
+      return;
+    };
     this.mouseDown = true;
     if (this.clickTimeout) {
       clearTimeout(this.clickTimeout);
@@ -82,7 +114,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public onMouseUp(event: MouseEvent) {
-    if (this.modeFormControl.value === MODES.DEFAULT) return;
+    if (this.modeFormControl.value === MODES.DEFAULT) {
+      if (this.container) {
+        this.container.nativeElement.style.cursor = 'grab';
+      }
+    } else {
+      if (this.container) {
+        this.container.nativeElement.style.cursor = 'crosshair';
+      }
+    };
     if (this.mouseDown) {
       this.prithviService.onClick(event);
       if (this.clickTimeout) {

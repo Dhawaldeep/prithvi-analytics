@@ -63,6 +63,7 @@ export class PrithviService {
     this.camera = cameraInitialized.camera;
     this.controls = cameraInitialized.controls;
     this.controls.enabled = false;
+
     this.timeService.tick();
     sources.forEach(source => {
       this.resourcesService.loadModel(source.assetUrl);

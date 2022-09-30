@@ -5,6 +5,9 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 
 import { AppRoutingModule } from './app-routing.module';
@@ -21,7 +24,10 @@ import { AppComponent } from './app.component';
     ReactiveFormsModule,
     MatChipsModule,
     MatButtonToggleModule,
-    MatCardModule
+    MatCardModule,
+    MatSnackBarModule,
+    MatButtonModule,
+    MatIconModule
   ],
   providers: [],
   bootstrap: [AppComponent]

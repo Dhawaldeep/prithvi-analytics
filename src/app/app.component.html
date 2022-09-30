@@ -3,7 +3,7 @@
 <div [ngClass]="{'loading-bar': true, ended: (loadingBarScale$ | async) === '' }" [ngStyle]="{ transform: (loadingBarScale$ | async) }"></div>
 <div #chipContainer class="chip-container">
     <mat-chip-list class="mat-chip-list-stacked" area-orientation="vertical">
-        <mat-chip color="primary" selected>Length: {{length | number}} m</mat-chip>
+        <mat-chip color="primary" selected>Distance: {{length | number}} m</mat-chip>
         <mat-chip *ngIf="area > 0" color="primary" selected>Area: {{area | number}} m<sup>2</sup></mat-chip>
     </mat-chip-list>
 </div>
@@ -15,8 +15,11 @@
         <mat-card-content>
             <mat-button-toggle-group [formControl]="modeFormControl" aria-label="Mode">
                 <mat-button-toggle [value]="1">Default</mat-button-toggle>
-                <mat-button-toggle [value]="2">Dimension</mat-button-toggle>
+                <mat-button-toggle [value]="2">Measurement</mat-button-toggle>
             </mat-button-toggle-group>
         </mat-card-content>
     </mat-card>
 </div>
+<!-- <button class="info-box" mat-mini-fab>
+    <mat-icon >info</mat-icon>
+</button> -->
