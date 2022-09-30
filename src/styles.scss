@@ -47,13 +47,17 @@ $prithvi-analytics-theme: mat.define-light-theme((color: (primary: $prithvi-anal
     }
   }
 
-  .mat-bottom-sheet-container-medium {
+  .mat-bottom-sheet-container {
     background-color:  mat.get-color-from-palette($primary, A200) !important;
     opacity: 0.8 !important;
   }
 
   .loading-bar {
     background-color:  mat.get-color-from-palette($accent) !important;
+  }
+
+  h1.title {
+    color:  mat.get-color-from-palette($primary) !important;
   }
 
 }

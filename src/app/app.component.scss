@@ -24,6 +24,19 @@
     }
 }
 
+h1.title {
+    position: absolute;
+    top: calc(50% - 48px);
+    width: 100%;
+    text-align: center;
+    font-size: 48px;
+}
+
+h1.title.ended {
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
 .loading-bar {
     position: absolute;
     top: 50%;
