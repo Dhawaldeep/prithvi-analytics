@@ -1,7 +1,8 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, HostListener, Renderer2 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { FormControl } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { MatButtonToggle } from '@angular/material/button-toggle'
 import { PrithviService } from './services/prithvi.service';
 import { MODES } from './enums/modes.enum';
@@ -22,10 +23,16 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private clickTimeout?: NodeJS.Timer;
 
   public length = 0;
+  public area = 0;
 
+  public loadingBarScale$: Observable<string>;
   private ngUnSubscribe = new Subject<void>();
   constructor(private titleService: Title, private prithviService: PrithviService, private renderer: Renderer2) {
     this.titleService.setTitle(this.title);
+    this.loadingBarScale$ = prithviService.getLoadedAmount().pipe(
+      takeUntil(this.ngUnSubscribe),
+      map((val) => (val < 1 ? `scaleX(${val})` : ''))
+    );
   }
 
   ngOnInit(): void {
@@ -43,6 +50,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // }]);
     this.prithviService.getCurrentLength().pipe(takeUntil(this.ngUnSubscribe)).subscribe(data => {
       this.length = data.length;
+      this.area = data.area || 0;
       if (this.chipContainer) {
         if (data.event) {
           this.renderer.setStyle(this.chipContainer.nativeElement, 'display', 'block');

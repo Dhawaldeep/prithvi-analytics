@@ -13,7 +13,7 @@
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
 $prithvi-analytics-primary: mat.define-palette(mat.$orange-palette, A400);
-$prithvi-analytics-accent: mat.define-palette(mat.$yellow-palette, A200, A100, A400);
+$prithvi-analytics-accent: mat.define-palette(mat.$red-palette, 500, A100, A400);
 
 // The warn palette is optional (defaults to red).
 $prithvi-analytics-warn: mat.define-palette(mat.$red-palette);
@@ -35,10 +35,14 @@ $prithvi-analytics-theme: mat.define-light-theme((color: (primary: $prithvi-anal
   //   color:  mat.get-color-from-palette($primary, default-contrast) !important;
   // }
 
-  // .mat-button-toggle-checked {
-  //   background-color:  mat.get-color-from-palette($accent) !important;
-  //   color:  mat.get-color-from-palette($accent, default-contrast) !important;
-  // }
+  .mat-button-toggle-checked {
+    background-color:  mat.get-color-from-palette($accent) !important;
+    color:  mat.get-color-from-palette($accent, default-contrast) !important;
+  }
+
+  .loading-bar {
+    background-color:  mat.get-color-from-palette($accent) !important;
+  }
 
   .mat-card {
     background-color:  mat.get-color-from-palette($primary) !important;

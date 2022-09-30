@@ -11,17 +11,19 @@ export class ResourcesService {
   private manager = new LoadingManager(this.onLoad.bind(this), this.onProgress.bind(this), this.onError.bind(this));
   private gltfLoader = new GLTFLoader(this.manager);
 
-  private loadedPercentage$ = new Subject<number>();
+  private loaded$ = new Subject<number>();
   private modelLoaded$ = new Subject<GLTF>();
+  private resourcesLoaded$ = new Subject<void>();
   constructor() { }
 
   private onLoad() {
-    console.log('Loaded');
+    // console.log('Loaded');
+    this.resourcesLoaded$.next();
   }
 
-  private onProgress(url: string, loaded: number, total: number) {
-    console.log(`Loading ${url}`, loaded, total);
-    this.loadedPercentage$.next((loaded/total)*100);
+  private onProgress(_url: string, loaded: number, total: number) {
+    // console.log(`Loading ${url}`, loaded, total);
+    this.loaded$.next((loaded/total));
   }
 
   private onError(url: string) {
@@ -34,12 +36,16 @@ export class ResourcesService {
     })
   }
 
-  public getLoadedPercentage() {
-    return this.loadedPercentage$.asObservable();
+  public getLoadedAmount() {
+    return this.loaded$.asObservable();
   }
 
   public getLoadedModel() {
     return this.modelLoaded$.asObservable();
+  }
+
+  public getResourcesLoaded() {
+    return this.resourcesLoaded$.asObservable();
   }
   
 }

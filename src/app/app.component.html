@@ -1,8 +1,10 @@
 <div #container (mousedown)="onMouseDown()" (mouseup)="onMouseUp($event)" class="container">
 </div>
+<div [ngClass]="{'loading-bar': true, ended: (loadingBarScale$ | async) === '' }" [ngStyle]="{ transform: (loadingBarScale$ | async) }"></div>
 <div #chipContainer class="chip-container">
-    <mat-chip-list>
-        <mat-chip color="primary" selected>{{length | number}}m</mat-chip>
+    <mat-chip-list class="mat-chip-list-stacked" area-orientation="vertical">
+        <mat-chip color="primary" selected>Length: {{length | number}} m</mat-chip>
+        <mat-chip *ngIf="area > 0" color="primary" selected>Area: {{area | number}} m<sup>2</sup></mat-chip>
     </mat-chip-list>
 </div>
 <div class="mode">
