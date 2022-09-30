@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { MatButtonToggle } from '@angular/material/button-toggle'
 import { PrithviService } from './services/prithvi.service';
 import { MODES } from './enums/modes.enum';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -43,10 +44,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.prithviService.initialize(this.container!.nativeElement, this.ngUnSubscribe, [{
-      assetUrl: '/assets/models/old_town_plovdiv/scene.gltf'
+      assetUrl: `${environment.baseHref}assets/models/old_town_plovdiv/scene.gltf`
     }]);
     // this.prithviService.initialize(this.container!.nativeElement, this.ngUnSubscribe, [{
-    //   assetUrl: '/assets/models/aerofotogrametria_-_cava_mineracao/scene.gltf'
+    //   assetUrl: `${environment.baseHref}assets/models/aerofotogrametria_-_cava_mineracao/scene.gltf`
     // }]);
     this.prithviService.getCurrentLength().pipe(takeUntil(this.ngUnSubscribe)).subscribe(data => {
       this.length = data.length;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import gsap from 'gsap';
 import { Subject } from 'rxjs';
 import { takeUntil, filter, withLatestFrom } from 'rxjs/operators'
-import { AxesHelper, BufferGeometry, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Scene, ShaderMaterial, WebGLRenderer } from 'three';
+import { BufferGeometry, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Scene, ShaderMaterial, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ISizes } from '../interfaces/sizes.interface';
