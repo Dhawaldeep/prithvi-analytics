@@ -29,9 +29,11 @@ export class PrithviService {
   private renderer?: WebGLRenderer;
   private sizes?: ISizes;
   private currentMeasurementOnPoint$ = new Subject<{
-    event?: { x: number; y: number; };
-    length: number;
-    area?: number;
+    value: {
+      event?: { x: number; y: number; };
+      length: number;
+      area?: number;
+    }, error?: Error;
   }>();
   private modes: MODES = MODES.DEFAULT;
 
@@ -114,22 +116,30 @@ export class PrithviService {
       takeUntil(unsubscribeSub),
       filter(() => this.modes === MODES.DIM),
       withLatestFrom(this.dimensionService.getLengthObj())
-    ).subscribe(([_, lengthObj]) => {
-      if (lengthObj.position) {
-        const screenPosition = lengthObj.position.clone();
-        screenPosition.project(this.camera!);
-        const x = screenPosition.x * this.sizes!.width * 0.5;
-        const y = - screenPosition.y * this.sizes!.height * 0.5;
-        this.currentMeasurementOnPoint$.next({
-          event: { x, y },
-          length: lengthObj.length,
-          area: lengthObj.area,
-        });
-      } else {
-        this.currentMeasurementOnPoint$.next({
-          length: 0,
-        });
-      }
+    ).subscribe({
+      next: ([_, { value, error }]) => {
+        if (value.position) {
+          const screenPosition = value.position.clone();
+          screenPosition.project(this.camera!);
+          const x = screenPosition.x * this.sizes!.width * 0.5;
+          const y = - screenPosition.y * this.sizes!.height * 0.5;
+          this.currentMeasurementOnPoint$.next({
+            error,
+            value: {
+              event: { x, y },
+              length: value.length,
+              area: value.area,
+            }
+          });
+        } else {
+          this.currentMeasurementOnPoint$.next({
+            error,
+            value: {
+              length: 0,
+            }
+          });
+        }
+      },
     });
 
     this.dimensionService.requestDimMeshesRemoval().pipe(
@@ -236,7 +246,9 @@ export class PrithviService {
     if (this.modes === MODES.DEFAULT) {
       this.onEscapePress();
       this.currentMeasurementOnPoint$.next({
-        length: 0,
+        value: {
+          length: 0,
+        }
       });
     }
   }

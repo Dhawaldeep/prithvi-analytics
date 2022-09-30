@@ -1,6 +1,6 @@
 <div #container (mousedown)="onMouseDown()" (mouseup)="onMouseUp($event)" class="container">
 </div>
-<h1 [ngClass]="{ 'title': true, ended: (loadingBarScale$ | async) === '' }">Prithvi Anlytics</h1>
+<h1 [ngClass]="{ 'title': true, ended: (loadingBarScale$ | async) === '', hide: hideTitle }">{{title}}</h1>
 <div [ngClass]="{'loading-bar': true, ended: (loadingBarScale$ | async) === '' }" [ngStyle]="{ transform: (loadingBarScale$ | async) }"></div>
 <div #chipContainer class="chip-container">
     <mat-chip-list class="mat-chip-list-stacked" area-orientation="vertical">

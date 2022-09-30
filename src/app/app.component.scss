@@ -37,6 +37,10 @@ h1.title.ended {
     transition: opacity 1.5s ease-in-out;
 }
 
+h1.title.hide {
+    display: none;
+}
+
 .loading-bar {
     position: absolute;
     top: 50%;
