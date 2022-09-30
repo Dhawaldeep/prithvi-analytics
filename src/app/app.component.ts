@@ -81,7 +81,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    this.sanckbar.open("Left click + drag or One finger drag (touch). Double click on model or scroll anywhere or Pinch (touch). Right click + drag or Two fingers drag (touch)", "OK", {
+    this.sanckbar.open("ORBIT: Left click + drag or One finger drag (touch). ZOOM: Double click on model or scroll anywhere or Pinch (touch). PAN: Right click + drag or Two fingers drag (touch)", "OK", {
       verticalPosition: 'top',
     }).afterDismissed().subscribe(() => {
       this.sanckbar.open("Cick on 'Measurement' button to toggle measurement mode.", 'OK', {
