@@ -14,10 +14,11 @@
             Mode
         </mat-card-title>
         <mat-card-content>
-            <mat-button-toggle-group [formControl]="modeFormControl" aria-label="Mode">
+            <mat-slide-toggle [formControl]="measurementControl">Enable Measurement</mat-slide-toggle>
+            <!-- <mat-button-toggle-group [formControl]="modeFormControl" aria-label="Mode">
                 <mat-button-toggle [value]="1">Default</mat-button-toggle>
                 <mat-button-toggle [value]="2">Measurement</mat-button-toggle>
-            </mat-button-toggle-group>
+            </mat-button-toggle-group> -->
         </mat-card-content>
     </mat-card>
 </div>

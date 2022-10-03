@@ -23,7 +23,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   public title = 'Prithvi Analytics';
   public hideTitle = false;
 
-  public modeFormControl = new FormControl<MODES>(MODES.DEFAULT);
+  // public modeFormControl = new FormControl<MODES>(MODES.DEFAULT);
+
+  public measurementControl = new FormControl<boolean>(false);
 
   private mouseDown = false;
   private clickTimeout?: NodeJS.Timer;
@@ -56,12 +58,21 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.modeFormControl.valueChanges.pipe(takeUntil(this.ngUnSubscribe)).subscribe(modes => {
-      this.prithviService.setMode(modes!);
-      if (modes === MODES.DEFAULT) {
+    // this.modeFormControl.valueChanges.pipe(takeUntil(this.ngUnSubscribe)).subscribe(modes => {
+    //   this.prithviService.setMode(modes!);
+    //   if (modes === MODES.DEFAULT) {
+    //     this.container!.nativeElement.style.cursor = 'grab';
+    //   }
+    //   if (modes === MODES.DIM) {
+    //     this.container!.nativeElement.style.cursor = 'crosshair';
+    //   }
+    // });
+
+    this.measurementControl.valueChanges.pipe(takeUntil(this.ngUnSubscribe)).subscribe((enabled) => {
+      this.prithviService.setMode(enabled ? MODES.DIM : MODES.DEFAULT);
+      if (!enabled) {
         this.container!.nativeElement.style.cursor = 'grab';
-      }
-      if (modes === MODES.DIM) {
+      } else {
         this.container!.nativeElement.style.cursor = 'crosshair';
       }
     });
@@ -107,7 +118,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public onMouseDown() {
-    if (this.modeFormControl.value === MODES.DEFAULT) {
+    // if (this.modeFormControl.value === MODES.DEFAULT) {
+    if (!this.measurementControl.value) {
       if (this.container) {
         this.container.nativeElement.style.cursor = 'grabbing';
       }
@@ -123,7 +135,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public onMouseUp(event: MouseEvent) {
-    if (this.modeFormControl.value === MODES.DEFAULT) {
+    if (!this.measurementControl.value) {
       if (this.container) {
         this.container.nativeElement.style.cursor = 'grab';
       }

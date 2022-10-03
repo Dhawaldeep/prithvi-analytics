@@ -11,6 +11,7 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -35,6 +36,7 @@ import { InfoSheetComponent } from './components/info-sheet/info-sheet.component
     MatListModule,
     MatDividerModule,
     MatSnackBarModule,
+    MatSlideToggleModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
