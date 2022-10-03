@@ -112,7 +112,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if (event.code === 'Escape') {
+    if (event.key === 'Escape') {
       this.prithviService.onEscapePress();
     }
   }
