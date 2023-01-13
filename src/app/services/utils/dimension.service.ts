@@ -12,7 +12,7 @@ export class DimensionService {
   private dimensionLine?: Line;
   private dimensionPolygon?: Mesh;
   private meshAdded$ = new Subject<Mesh | Line>();
-  private lengthObj$ = new BehaviorSubject<{
+  private dimObj$ = new BehaviorSubject<{
     value: {
       position?: Vector3;
       length: number;
@@ -23,6 +23,78 @@ export class DimensionService {
   private requestMeshRemoval$ = new Subject<void>();
   constructor() { }
 
+  private calculateAreaLength() {
+    const bufferGeometry = new BufferGeometry();
+
+    const points = this.lengthMarkers.map(m => m.position);
+    const triangles: Triangle[] = [];
+    try {
+      const swctx = new poly2tri.SweepContext(points.map(v => {
+        return new poly2tri.Point(v.x, v.z);
+      }));
+      swctx.triangulate();
+      const vertices = new Float32Array(swctx.getTriangles().map(triangle => {
+        const triangleVertices = triangle.getPoints().map(point => {
+          const y = points.find(v => v.x === point.x && v.z === point.y)!.y;
+          return new Vector3(point.x, y, point.y);
+        });
+        triangles.push(new Triangle(triangleVertices[0], triangleVertices[1], triangleVertices[2]));
+        return triangleVertices;
+      }).reduce((acc, curr) => {
+        return [
+          ...acc,
+          ...curr.reduce((pacc, pcurr) => {
+            return [
+              ...pacc,
+              pcurr.x, pcurr.y, pcurr.z
+            ]
+          }, [] as number[])
+        ]
+      }, [] as number[]));
+
+      const surfaceArea = triangles.reduce((acc, curr) => {
+        return acc + curr.getArea();
+      }, 0);
+
+      bufferGeometry.setAttribute('position', new BufferAttribute(vertices, 3));
+
+      this.dimensionPolygon = new Mesh(bufferGeometry, new MeshBasicMaterial({ color: 0xD50000, transparent: true, opacity: 0.5, side: DoubleSide }));
+      // this.dimensionPolygon.renderOrder = 2;
+      (this.dimensionPolygon.material as MeshBasicMaterial).depthTest = false;
+      this.meshAdded$.next(this.dimensionPolygon);
+
+      const lengthObj: { length: number; prevPos: Vector3 } = this.calculateLength([...this.lengthMarkers, this.lengthMarkers[0]]);
+
+      this.dimObj$.next({
+        value: {
+          length: lengthObj.length,
+          area: surfaceArea,
+          position: lengthObj.prevPos
+        }
+      });
+
+    } catch (error) {
+      this.dimObj$.next({ value: this.dimObj$.value.value, error: new Error(`Not a valid polygon. Please press 'Escape' key & draw a valid polygon, with no intersecting sides, to measure area.`) });
+    }
+  }
+
+  private calculateLength(lengthMarkers: Mesh[]) {
+    return lengthMarkers.reduce((acc, curr) => {
+      const segmentDistance = acc.prevPos.distanceTo(curr.position);
+      return {
+        prevPos: curr.position,
+        length: segmentDistance + acc.length,
+      }
+    }, {
+      length: 0,
+      prevPos: lengthMarkers[0].position
+    } as { length: number; prevPos: Vector3 });
+  }
+
+  private calculateVolume() {
+
+  }
+
   public setMarker(data: { dimIntersections: Intersection[]; modelIntersections: Intersection[]; }) {
     if (data.dimIntersections.length > 0 || data.modelIntersections.length > 0) {
       if (this.lengthMarkers.length > 3 && this.dimensionPolygon) {
@@ -30,67 +102,7 @@ export class DimensionService {
       }
     }
     if (data.dimIntersections.length > 0 && this.lengthMarkers.length > 2) {
-      const bufferGeometry = new BufferGeometry();
-
-      const points = this.lengthMarkers.map(m => m.position);
-      const triangles: Triangle[] = [];
-      try {
-        const swctx = new poly2tri.SweepContext(points.map(v => {
-          return new poly2tri.Point(v.x, v.z);
-        }));
-        swctx.triangulate();
-        const vertices = new Float32Array(swctx.getTriangles().map(triangle => {
-          const triangleVertices = triangle.getPoints().map(point => {
-            const y = points.find(v => v.x === point.x && v.z === point.y)!.y;
-            return new Vector3(point.x, y, point.y);
-          });
-          triangles.push(new Triangle(triangleVertices[0], triangleVertices[1], triangleVertices[2]));
-          return triangleVertices
-        }).reduce((acc, curr) => {
-          return [
-            ...acc,
-            ...curr.reduce((pacc, pcurr) => {
-              return [
-                ...pacc,
-                pcurr.x, pcurr.y, pcurr.z
-              ]
-            }, [] as number[])
-          ]
-        }, [] as number[]));
-
-        const surfaceArea = triangles.reduce((acc, curr) => {
-          return acc + curr.getArea();
-        }, 0);
-
-        bufferGeometry.setAttribute('position', new BufferAttribute(vertices, 3));
-
-        this.dimensionPolygon = new Mesh(bufferGeometry, new MeshBasicMaterial({ color: 0xD50000, transparent: true, opacity: 0.5, side: DoubleSide }));
-        // this.dimensionPolygon.renderOrder = 2;
-        (this.dimensionPolygon.material as MeshBasicMaterial).depthTest = false;
-        this.meshAdded$.next(this.dimensionPolygon);
-
-        const lengthObj: { length: number; prevPos: Vector3 } = [...this.lengthMarkers, this.lengthMarkers[0]].reduce((acc, curr) => {
-          const segmentDistance = acc.prevPos.distanceTo(curr.position);
-          return {
-            prevPos: curr.position,
-            length: segmentDistance + acc.length,
-          }
-        }, {
-          length: 0,
-          prevPos: this.lengthMarkers[0].position
-        } as { length: number; prevPos: Vector3 });
-
-        this.lengthObj$.next({
-          value: {
-            length: lengthObj.length,
-            area: surfaceArea,
-            position: lengthObj.prevPos
-          }
-        });
-
-      } catch (error) {
-        this.lengthObj$.next({ value: this.lengthObj$.value.value, error: new Error(`Not a valid polygon. Please press 'Escape' key & draw a valid polygon, with no intersecting sides, to measure area.`) });
-      }
+      this.calculateAreaLength();
     } else {
       if (data.modelIntersections.length > 0) {
         const position = data.modelIntersections[0].point;
@@ -115,18 +127,9 @@ export class DimensionService {
             (this.dimensionLine.material as MeshBasicMaterial).depthTest = false;
             // this.dimensionLine.renderOrder = 2;
           }
-          const lengthObj: { length: number; prevPos: Vector3 } = this.lengthMarkers.reduce((acc, curr) => {
-            const segmentDistance = acc.prevPos.distanceTo(curr.position);
-            return {
-              prevPos: curr.position,
-              length: segmentDistance + acc.length,
-            }
-          }, {
-            length: 0,
-            prevPos: this.lengthMarkers[0].position
-          } as { length: number; prevPos: Vector3 });
+          const lengthObj: { length: number; prevPos: Vector3 } = this.calculateLength(this.lengthMarkers);
 
-          this.lengthObj$.next({
+          this.dimObj$.next({
             value: {
               length: lengthObj.length,
               position: lengthObj.prevPos
@@ -141,8 +144,8 @@ export class DimensionService {
     return this.meshAdded$.asObservable();
   }
 
-  public getLengthObj() {
-    return this.lengthObj$.asObservable();
+  public getDimObj() {
+    return this.dimObj$.asObservable();
   }
 
   public getToBeRemovedMeshes() {
@@ -157,7 +160,7 @@ export class DimensionService {
     this.lengthMarkers.splice(0);
     delete this['dimensionLine'];
     delete this['dimensionPolygon'];
-    this.lengthObj$.next({
+    this.dimObj$.next({
       value: {
         length: 0,
       }
