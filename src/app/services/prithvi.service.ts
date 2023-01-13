@@ -115,7 +115,7 @@ export class PrithviService {
     this.timeService.getTrigger().pipe(
       takeUntil(unsubscribeSub),
       filter(() => this.modes === MODES.DIM),
-      withLatestFrom(this.dimensionService.getLengthObj())
+      withLatestFrom(this.dimensionService.getDimObj())
     ).subscribe({
       next: ([_, { value, error }]) => {
         if (value.position) {
